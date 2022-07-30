@@ -1,0 +1,12 @@
+# userSchema
+- username
+- First Name
+- Last Name
+- Location
+- Age
+- Email
+- ID
+- links (links to socials)
+- blurb/questions
+- userSwipes ({id:true} => have i swiped left or right on this user)
+- picture url (cloudanary)
