@@ -5,7 +5,8 @@ require('dotenv').config();
 const port = process.env.PORT || 4000
 const Users = require('./models/user')
 
-
+app.use(express.json())
+app.set('json spaces', 2)
 app.listen(port, () => console.log(`listening on port: ${port}`))
 
 // mongoose setup
@@ -39,31 +40,31 @@ app.get('/user/:userId', async (req, res) => {
 
 // app.post('/createUser')
 app.post('/createUser', async (req, res) => {
-    console.log("debug", req.body)
-    Object.keys(req).forEach(key => console.log(key))
+    // console.log("debug", req.body)
+    // Object.keys(req).forEach(key => console.log(key))
 
-    // try {
-    //     const reqBody = req.body;
+    try {
+        const reqBody = req.body;
 
-    //     writeToDb(
-    //         reqBody.userId || "",
-    //         reqBody.userName || "",
-    //         reqBody.firstName || "",
-    //         reqBody.lastName || "",
-    //         reqBody.location || "",
-    //         reqBody.age || "",
-    //         reqBody.email || "",
-    //         reqBody.linksSocial || "",
-    //         reqBody.linksProjects || "",
-    //         reqBody.userDescription || "",
-    //         reqBody.userSwipes || "",
-    //         reqBody.imageProfile || "",
-    //     );
+        writeToDb(
+            reqBody.userId,
+            reqBody.userName,
+            reqBody.firstName,
+            reqBody.lastName,
+            reqBody.location,
+            reqBody.age,
+            reqBody.email,
+            reqBody.linksSocial,
+            reqBody.linksProjects,
+            reqBody.userDescription,
+            reqBody.userSwipes,
+            reqBody.imageProfile,
+        );
 
-    res.status(201).send("done");
-    // } catch (err) {
-    //     console.log(err);
-    // }
+        res.status(201).send("done");
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 // app.put('/updateUser')
