@@ -25,7 +25,7 @@ const writeToDb = async ({
 	imageprofile
 }) => {
 	console.log('write to db');
-	const query = { userid: userid };
+	const query = { userid };
 	const updatedat = Date.now();
 	const update = {
 		$set: {

@@ -12,13 +12,13 @@ const users = require('./routes/userRoutes');
 const swipe = require('./routes/swipeRoutes');
 const login = require('./routes/loginRoutes');
 
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 //both index.js and things.js should be in same directory
 app.use('/users', users);
 app.use('/swipe', swipe);
 app.use('/login', login);
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
 app.use(logger);
 app.set('json spaces', 2);
 app.listen(port, () => console.log(`listening on port: ${port}`));
