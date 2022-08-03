@@ -1,23 +1,20 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    userName: { type: String },
-    userId: { type: String },
-    firstName: { type: String },
-    lastName: { type: String },
-    location: { type: String },
-    age: { type: Number },
-    email: { type: String },
-    linksSocial: { type: Object },
-    linksProjects: { type: Object },
-    userDescription: { type: String },
-    userSwipes: { type: Object },
-    imageProfile: { type: String },
-    createdAt: { type: Date, required: true, default: Date.now },
-    updatedAt: { type: Date, required: true },
-
+	username: { type: String },
+	userid: { type: String, required: true },
+	firstname: { type: String },
+	lastname: { type: String },
+	location: { type: String },
+	age: { type: Number },
+	email: { type: String },
+	linkssocial: { type: Object },
+	linksprojects: { type: Object },
+	userdescription: { type: String },
+	userswipes: { type: Object },
+	imageprofile: { type: String },
+	createdat: { type: Date, required: true, default: Date.now },
+	updatedat: { type: Date, required: true }
 });
 
 module.exports = mongoose.model('Users', userSchema);
-
-

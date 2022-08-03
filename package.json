@@ -8,6 +8,7 @@
     "start": "concurrently \"node server/server.js\" \"cd client && npm start\" ",
     "devstart": "concurrently \"nodemon server/server.js\" \"cd client && npm start\" ",
     "monstart": "nodemon server/server.js"
+    
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "dependencies": {
     "concurrently": "^7.3.0",
     "dotenv": "^16.0.1",
+    "moment": "^2.29.4",
     "nodemon": "^2.0.19"
   }
 }
