@@ -43,16 +43,17 @@ router.post('/register', async (req, res) => {
 		const write = await writeToDb({
 			userid: reqBody.userid,
 			username: reqBody.username,
-			firstname: reqBody.firstname,
-			lastname: reqBody.lastname,
-			location: reqBody.location,
-			age: reqBody.age,
-			email: reqBody.email,
-			linkssocial: reqBody.linkssocial,
-			linksprojects: reqBody.linksprojects,
-			userdescription: reqBody.userdescription,
-			userswipes: reqBody.userswipes,
-			imageprofile: reqBody.imageprofile
+			firstname: reqBody.firstname || '',
+			lastname: reqBody.lastname || '',
+			location: reqBody.location || '',
+			age: reqBody.age || 0,
+			email: reqBody.email || '',
+			linkssocial: reqBody.linkssocial || {},
+			linksprojects: reqBody.linksprojects || {},
+			userdescription: reqBody.userdescription || '',
+			userswipes: reqBody.userswipes || {},
+			recommendqueue: reqBody.recommendqueue || [],
+			imageprofile: reqBody.imageprofile || ''
 		});
 
 		res.status(201).send({ message: `User ${reqBody.userid} registered`, updated: reqBody, data: write });

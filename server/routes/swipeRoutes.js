@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { readFromDb, writeToDb, deleteFromDb } = require('../helpers/dbhelpers');
+const { readFromDb, writeToDb, deleteFromDb, getRandomUsers } = require('../helpers/dbhelpers');
 
 router.post('/ismatch/:userid/:otherid', async (req, res) => {
 	try {
@@ -37,6 +37,39 @@ router.post('/ismatch/:userid/:otherid', async (req, res) => {
 	}
 });
 
+// app.get('/nextUser')
+router.post('/nextuser/:userid/:count', async (req, res) => {
+	try {
+		const userid = req.params.userid;
+		const count = Number(req.params.count);
+
+		console.log('nextuser1', userid, count, typeof count);
+		if (typeof count === 'number') {
+			const data = await readFromDb('userid', userid);
+			const randomUsers = await getRandomUsers(count, userid);
+			// const currentUser = data.find((user) => user.userid === userid);
+			// let allowedLocalUserIndex = 5;
+
+			// const firstFewUsers = data.slice(0, allowedLocalUserIndex);
+
+			const listOfUsers = randomUsers.map((user) => user.userid);
+			// 	.filter((user) => user);
+			console.log('listOfUsers', userid, listOfUsers);
+			data.recommendqueue.push(listOfUsers);
+			const write = await writeToDb({ userid, recommendqueue: data.recommendqueue });
+			res.status(200).send({
+				message: `User ${userid} queue addition successful: added ${data.recommendqueue
+					.length} recommendations`,
+				data: write
+			});
+		} else {
+			res.status(400).send({ message: 'Bad request' });
+		}
+	} catch (err) {
+		console.log(err);
+	}
+});
+
 router.post('/:userid/:otherid/:bool', async (req, res) => {
 	try {
 		const bool = req.params.bool;
@@ -57,8 +90,6 @@ router.post('/:userid/:otherid/:bool', async (req, res) => {
 		console.log(err);
 	}
 });
-
-// app.get('/nextUser')
 
 // app.get('/isMatch')
 

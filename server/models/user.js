@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
 	linksprojects: { type: Object },
 	userdescription: { type: String },
 	userswipes: { type: Object },
+	recommendqueue: { type: Array },
 	imageprofile: { type: String },
 	createdat: { type: Date, required: true, default: Date.now },
 	updatedat: { type: Date, required: true }

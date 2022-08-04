@@ -22,6 +22,7 @@ const writeToDb = async ({
 	linksprojects,
 	userdescription,
 	userswipes,
+	recommendqueue,
 	imageprofile
 }) => {
 	console.log('write to db');
@@ -40,6 +41,7 @@ const writeToDb = async ({
 			linksprojects,
 			userdescription,
 			userswipes,
+			recommendqueue,
 			imageprofile
 		},
 		updatedat
@@ -54,4 +56,8 @@ const deleteFromDb = async (userid) => {
 	return await Users.findOneAndDelete(query);
 };
 
-module.exports = { readFromDb, writeToDb, deleteFromDb };
+const getRandomUsers = async (count, userid) => {
+	return await Users.aggregate([ { $match: { userid: { $not: { $eq: userid } } } }, { $sample: { size: 3 } } ]);
+};
+
+module.exports = { readFromDb, writeToDb, deleteFromDb, getRandomUsers };
