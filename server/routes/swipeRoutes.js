@@ -52,10 +52,11 @@ router.post('/nextuser/:userid/:count', async (req, res) => {
 
 			// const firstFewUsers = data.slice(0, allowedLocalUserIndex);
 
-			const listOfUsers = randomUsers.map((user) => user.userid);
-			// 	.filter((user) => user);
+			const listOfUsers = randomUsers
+				.map((user) => user.userid)
+				.filter((user) => !data.recommendqueue.includes(user));
 			console.log('listOfUsers', userid, listOfUsers);
-			data.recommendqueue.push(listOfUsers);
+			data.recommendqueue.push(...listOfUsers);
 			const write = await writeToDb({ userid, recommendqueue: data.recommendqueue });
 			res.status(200).send({
 				message: `User ${userid} queue addition successful: added ${data.recommendqueue
