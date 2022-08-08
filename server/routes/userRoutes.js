@@ -19,7 +19,6 @@ router.get("/:userid", async (req, res) => {
     res
       .status(200)
       .send({ message: `Retrieve user data for ${userid}`, data: data });
-    // res.status(200).json({ key });
   } catch (err) {
     console.log(err);
   }
@@ -37,9 +36,6 @@ router.delete("/:userid", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  // console.log("debug", req.body)
-  // Object.keys(req).forEach(key => console.log(key))
-
   try {
     const reqBody = req.body;
     console.log("reqBody", req.body);
@@ -68,8 +64,5 @@ router.post("/register", async (req, res) => {
     console.log(err);
   }
 });
-
-// app.put('/updateUser')
-// app.delete('/deleteUser')
 
 module.exports = router;

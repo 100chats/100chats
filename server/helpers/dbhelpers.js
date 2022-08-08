@@ -66,16 +66,27 @@ const getRandomUsers = async (count, swipedQueuedUsers, userid) => {
 };
 
 const getSwipedUsers = async (userdata) => {
-  //   const data = await readFromDb("userid", userid);
   return Object.keys(userdata.userswipes);
 };
-// const asyncFunc = async () => {
-//   const test = await getRandomUsers(15, [2, 3, 4, 5], 1);
-//   test
-//     .sort((a, b) => a.userid - b.userid)
-//     .forEach((user) => console.log(user.userid));
-// };
-// asyncFunc();
+const getRecommendations = async ({ userid, count }) => {
+  console.log("useridcount", userid, count);
+  const data = await readFromDb("userid", userid);
+  const swipedUsers = await getSwipedUsers(data);
+  const randomUsers = await getRandomUsers(
+    count,
+    [...swipedUsers, ...data.recommendqueue],
+    userid
+  );
+  const listOfUsers = randomUsers.map((user) => user.userid);
+  data.recommendqueue.push(...listOfUsers);
+  // data.recommendqueue = [];
+  const write = await writeToDb({
+    userid,
+    recommendqueue: data.recommendqueue,
+  });
+
+  return { listOfUsers, write, data };
+};
 
 module.exports = {
   readFromDb,
@@ -83,4 +94,5 @@ module.exports = {
   deleteFromDb,
   getRandomUsers,
   getSwipedUsers,
+  getRecommendations,
 };

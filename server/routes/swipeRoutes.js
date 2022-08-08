@@ -6,6 +6,7 @@ const {
   deleteFromDb,
   getRandomUsers,
   getSwipedUsers,
+  getRecommendations,
 } = require("../helpers/dbhelpers");
 
 router.post("/ismatch/:userid/:otherid", async (req, res) => {
@@ -53,22 +54,9 @@ router.post("/nextuser/:userid", async (req, res) => {
     const userid = req.params.userid;
     let nextuser = 0;
     let write = null;
-    // const count = Number(req.params.count);
 
-    // console.log("nextuser1", userid, count, typeof count);
-    // if (typeof count === "number") {
     const data = await readFromDb("userid", userid);
-    //   console.log("data", data);
-    //   const swipedUsers = await getSwipedUsers(data);
-    //   const randomUsers = await getRandomUsers(count, swipedUsers, userid);
-    //   console.log("swipedUsers", swipedUsers);
-    //   // const currentUser = data.find((user) => user.userid === userid);
-    //   // let allowedLocalUserIndex = 5;
-    //   // const firstFewUsers = data.slice(0, allowedLocalUserIndex);
-    //   const listOfUsers = randomUsers
-    //     .map((user) => user.userid)
-    //     .filter((user) => !data.recommendqueue.includes(user));
-    // console.log("data", userid, data);
+
     if (data.recommendqueue.length > 0) {
       nextuser = data.recommendqueue.shift();
       write = await writeToDb({
@@ -80,46 +68,27 @@ router.post("/nextuser/:userid", async (req, res) => {
       //   write = null;
       //   get more users
     }
-    // data.recommendqueue.length > 0 ? data.recommendqueue.shift() : 0;
-    // console.log("nextuser", userid, nextuser);
+
     res.status(200).send({
       message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
       data: write,
       response: nextuser,
     });
-    // // } else {
-    //   res.status(400).send({ message: "Bad request" });
-    // }
   } catch (err) {
     console.log(err);
   }
 });
-router.post("/recommendation/:userid/:count", async (req, res) => {
+router.post("/recommendation/:userid/:count?", async (req, res) => {
   try {
     const userid = req.params.userid;
-    const count = Number(req.params.count);
+    const count = Number(req.params.count || 20);
 
-    console.log("nextuser1", userid, count, typeof count);
     if (typeof count === "number") {
-      const data = await readFromDb("userid", userid);
-      // console.log("data", data);
-      const swipedUsers = await getSwipedUsers(data);
-      const randomUsers = await getRandomUsers(
-        count,
-        [...swipedUsers, ...data.recommendqueue],
-        userid
-      );
-      // console.log("swipedUsers", swipedUsers);
-
-      const listOfUsers = randomUsers.map((user) => user.userid);
-      // .filter((user) => !data.recommendqueue.includes(user));
-      // console.log("listOfUsers", userid, listOfUsers);
-      data.recommendqueue.push(...listOfUsers);
-      // data.recommendqueue = [];
-      const write = await writeToDb({
+      const { listOfUsers, write, data } = await getRecommendations({
         userid,
-        recommendqueue: data.recommendqueue,
+        count,
       });
+
       res.status(200).send({
         message: `User ${userid} queue addition successful: added ${data.recommendqueue.length} recommendations`,
         data: write,
@@ -167,7 +136,5 @@ router.post("/:userid/:otherid/:bool", async (req, res) => {
     console.log(err);
   }
 });
-
-// app.get('/isMatch')
 
 module.exports = router;
