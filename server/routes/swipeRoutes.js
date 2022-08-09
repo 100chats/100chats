@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const Users = require("../models/user");
 const {
   readFromDb,
   writeToDb,
@@ -16,7 +17,11 @@ router.post("/ismatch/:userid/:otherid", async (req, res) => {
 
     console.log("ismatch", userid, userid);
 
-    const data = await readFromDb("userid", userid);
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
     let response = null;
     if (data.userswipes[otherid] !== undefined) {
       if (data.userswipes[otherid].swipe === "true") {
@@ -30,7 +35,11 @@ router.post("/ismatch/:userid/:otherid", async (req, res) => {
           response: response,
         });
       }
-      const write = await writeToDb({ userid, userswipes: data.userswipes });
+      const write = await writeToDb({
+        userid,
+        userswipes: data.userswipes,
+        collection: Users,
+      });
       res.status(200).send({
         message: `User ${userid} has user ${otherid} with value ${data.userswipes[otherid]}`,
         data: write,
@@ -55,13 +64,18 @@ router.post("/nextuser/:userid", async (req, res) => {
     let nextuser = 0;
     let write = null;
 
-    const data = await readFromDb("userid", userid);
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
 
     if (data.recommendqueue.length > 0) {
       nextuser = data.recommendqueue.shift();
       write = await writeToDb({
         userid,
         recommendqueue: data.recommendqueue,
+        collection: Users,
       });
     } else {
       //   nextuser = 0;
@@ -110,7 +124,11 @@ router.post("/:userid/:otherid/:bool", async (req, res) => {
 
     console.log("swipe", userid, userid, bool, typeof bool);
     if (bool === "true" || bool === "false") {
-      const data = await readFromDb("userid", userid);
+      const data = await readFromDb({
+        key: "userid",
+        value: userid,
+        collection: Users,
+      });
       console.log("userswipes", data.userswipes);
       if (bool === "true") {
         data.userswipes[otherid] = {
@@ -123,7 +141,11 @@ router.post("/:userid/:otherid/:bool", async (req, res) => {
           time: new Date().toISOString(),
         };
       }
-      const write = await writeToDb({ userid, userswipes: data.userswipes });
+      const write = await writeToDb({
+        userid,
+        userswipes: data.userswipes,
+        collection: Users,
+      });
 
       res.status(200).send({
         message: `Swipe by ${userid} successful: ${bool} on ${otherid}`,

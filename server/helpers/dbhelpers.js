@@ -1,16 +1,18 @@
 const Users = require("../models/user");
+
 // read all documents from db
-const readFromDb = async (key, value) => {
+const readFromDb = async ({ key, value, collection = undefined }) => {
   console.log("read from db");
   if (key != undefined && value != undefined) {
-    return await Users.findOne({ [key]: value });
+    return await collection.findOne({ [key]: value });
   } else {
-    return await Users.find().lean();
+    return await collection.find().lean();
   }
 };
 
 // helps to write to db. Upsert helps with adding if not found, or update if found.
 const writeToDb = async ({
+  collection = undefined,
   userid,
   username,
   firstname,
@@ -47,13 +49,13 @@ const writeToDb = async ({
     updatedat,
   };
 
-  return await Users.findOneAndUpdate(query, update, { upsert: true });
+  return await collection.findOneAndUpdate(query, update, { upsert: true });
 };
 
-const deleteFromDb = async (userid) => {
+const deleteFromDb = async ({ userid, collection = undefined }) => {
   console.log(`delete ${userid} from db`);
   const query = { userid: userid };
-  return await Users.findOneAndDelete(query);
+  return await collection.findOneAndDelete(query);
 };
 
 const getRandomUsers = async (count, swipedQueuedUsers, userid) => {
@@ -70,7 +72,11 @@ const getSwipedUsers = async (userdata) => {
 };
 const getRecommendations = async ({ userid, count }) => {
   console.log("useridcount", userid, count);
-  const data = await readFromDb("userid", userid);
+  const data = await readFromDb({
+    key: "userid",
+    value: userid,
+    collection: Users,
+  });
   const swipedUsers = await getSwipedUsers(data);
   const randomUsers = await getRandomUsers(
     count,
@@ -83,6 +89,7 @@ const getRecommendations = async ({ userid, count }) => {
   const write = await writeToDb({
     userid,
     recommendqueue: data.recommendqueue,
+    collection: Users,
   });
 
   return { listOfUsers, write, data };

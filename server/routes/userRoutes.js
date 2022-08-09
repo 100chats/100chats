@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { readFromDb, writeToDb, deleteFromDb } = require("../helpers/dbhelpers");
+const Users = require("../models/user");
 
 router.get("/allusers", async (req, res) => {
   try {
@@ -14,7 +15,11 @@ router.get("/allusers", async (req, res) => {
 router.get("/:userid", async (req, res) => {
   let userid = req.params.userid;
   try {
-    const data = await readFromDb("userid", userid);
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
 
     res
       .status(200)
@@ -53,6 +58,7 @@ router.post("/register", async (req, res) => {
       userswipes: reqBody.userswipes || {},
       recommendqueue: reqBody.recommendqueue || [],
       imageprofile: reqBody.imageprofile,
+      collection: Users,
     });
 
     res.status(201).send({
