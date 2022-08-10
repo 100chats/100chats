@@ -1,133 +1,65 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const mongoose = require('mongoose');
-require('dotenv').config();
-const port = process.env.PORT || 4000
-const Users = require('./models/user')
+const mongoose = require("mongoose");
+require("dotenv").config();
+const port = process.env.PORT || 4000;
+const Users = require("./models/user");
+const { logger } = require("./helpers/helpers");
+const bodyParser = require("body-parser");
+const path = require("path");
+const { readFromDb, writeToDb, deleteFromDb } = require("./helpers/dbhelpers");
 
-app.use(express.json())
-app.set('json spaces', 2)
-app.listen(port, () => console.log(`listening on port: ${port}`))
+const users = require("./routes/userRoutes");
+const swipe = require("./routes/swipeRoutes");
+const login = require("./routes/loginRoutes");
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+//both index.js and things.js should be in same directory
+app.use("/users", users);
+app.use("/swipe", swipe);
+app.use("/login", login);
+
+app.use(logger);
+app.set("json spaces", 2);
+app.listen(port, () => console.log(`listening on port: ${port}`));
+app.set("view engine", "ejs");
+// app.use(express.static("public"));
+
+const { auth } = require("express-openid-connect");
+
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: "a long, randomly-generated string stored in env",
+  baseURL: "http://localhost:4000",
+  clientID: "U2ee5rGnHGlXxHIP1srNgzarbCHuNihJ",
+  issuerBaseURL: "https://dev-hd797ril.us.auth0.com",
+};
+
+// auth router attaches /login, /logout, and /callback routes to the baseURL
+app.use(auth(config));
+
+// req.isAuthenticated is provided from the auth router
+app.get("/", (req, res) => {
+  res.send(
+    req.oidc.isAuthenticated()
+      ? `Logged in ${JSON.stringify(req.oidc.user)}`
+      : "Logged out"
+  );
+});
 
 // mongoose setup
 mongoose.connect(process.env.DBSTRING);
 const db = mongoose.connection;
-db.on('error', (error) => console.log(error));
-db.once('open', () => console.log('Connected to db'));
+db.on("error", (error) => console.log(error));
+db.once("open", () => console.log("Connected to db"));
 
-app.get('/', async (req, res) => {
-    try {
-        res.send("Hello World");
-    } catch (err) {
-        console.log(err);
-    }
+app.get("/", async (req, res) => {
+  try {
+    // res.status(200).send('Getting "/"  route');
+    res.render("../server/views/index.ejs");
+  } catch (err) {
+    console.log(err);
+  }
 });
-
-
-
-
-// app.get('/user')
-app.get('/user/:userId', async (req, res) => {
-    try {
-        const data = await readFromDb("userId", req.params.userId);
-
-        res.status(200).json({ data });
-        // res.status(200).json({ key });
-    } catch (err) {
-        console.log(err);
-    }
-});
-
-// app.post('/createUser')
-app.post('/createUser', async (req, res) => {
-    // console.log("debug", req.body)
-    // Object.keys(req).forEach(key => console.log(key))
-
-    try {
-        const reqBody = req.body;
-
-        writeToDb(
-            reqBody.userId,
-            reqBody.userName,
-            reqBody.firstName,
-            reqBody.lastName,
-            reqBody.location,
-            reqBody.age,
-            reqBody.email,
-            reqBody.linksSocial,
-            reqBody.linksProjects,
-            reqBody.userDescription,
-            reqBody.userSwipes,
-            reqBody.imageProfile,
-        );
-
-        res.status(201).send("done");
-    } catch (err) {
-        console.log(err);
-    }
-});
-
-// app.put('/updateUser')
-// app.delete('/deleteUser')
-// app.get('/allUsers')
-app.get('/allUsers', async (req, res) => {
-    try {
-        const data = await readFromDb();
-
-        res.status(200).json({ data });
-    } catch (err) {
-        console.log(err);
-    }
-});
-// app.get('/nextUser')
-// app.get('/isMatch')
-
-// TODO: login routes
-
-
-// read all documents from db
-const readFromDb = async (key, value) => {
-    console.log('read from db');
-    if (key != undefined && value != undefined) {
-        return await Users.findOne({ [key]: value });
-    } else {
-        return await Users.find().lean();
-    }
-};
-
-// helps to write to db. Upsert helps with adding if not found, or update if found.
-const writeToDb = async (userName,
-    userId,
-    firstName,
-    lastName,
-    location,
-    age,
-    email,
-    linksSocial,
-    linksProjects,
-    userDescription,
-    userSwipes,
-    imageProfile) => {
-    console.log('write to db');
-    const query = { userName: userName };
-    const updated_at = Date.now();
-    const update = {
-        $set: {
-            userName,
-            userId,
-            firstName,
-            lastName,
-            location,
-            age,
-            email,
-            linksSocial,
-            linksProjects,
-            userDescription,
-            userSwipes,
-            imageProfile
-        },
-        updated_at
-    };
-
-    return await Users.findOneAndUpdate(query, update, { upsert: true });
-};
