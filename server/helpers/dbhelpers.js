@@ -1,9 +1,13 @@
 const Users = require("../models/user");
 
 // read all documents from db
-const readFromDb = async ({ key, value, collection = undefined }) => {
+const readFromDb = async ({
+  key = undefined,
+  value = undefined,
+  collection = undefined,
+}) => {
   console.log("read from db");
-  if (key != undefined && value != undefined) {
+  if (key !== undefined && value !== undefined) {
     return await collection.findOne({ [key]: value });
   } else {
     return await collection.find().lean();

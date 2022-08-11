@@ -15,12 +15,12 @@ const login = require("./routes/loginRoutes");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-//both index.js and things.js should be in same directory
+app.use(logger);
+
 app.use("/users", users);
-app.use("/swipe", swipe);
+app.use("/swipes", swipe);
 app.use("/login", login);
 
-app.use(logger);
 app.set("json spaces", 2);
 app.listen(port, () => console.log(`listening on port: ${port}`));
 app.set("view engine", "ejs");
@@ -42,11 +42,11 @@ app.use(auth(config));
 
 // req.isAuthenticated is provided from the auth router
 app.get("/", (req, res) => {
-  res.send(
-    req.oidc.isAuthenticated()
+  res.json({
+    message: req.oidc.isAuthenticated()
       ? `Logged in ${JSON.stringify(req.oidc.user)}`
-      : "Logged out"
-  );
+      : "Logged out",
+  });
 });
 
 // mongoose setup
@@ -57,7 +57,7 @@ db.once("open", () => console.log("Connected to db"));
 
 app.get("/", async (req, res) => {
   try {
-    // res.status(200).send('Getting "/"  route');
+    // res.status(200).json({message:'Getting "/"  route'});
     res.render("../server/views/index.ejs");
   } catch (err) {
     console.log(err);

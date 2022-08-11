@@ -10,10 +10,10 @@ const {
   getRecommendations,
 } = require("../helpers/dbhelpers");
 
-router.post("/ismatch/:userid/:otherid", async (req, res) => {
+router.post("/ismatch", async (req, res) => {
   try {
-    const userid = req.params.userid;
-    const otherid = req.params.otherid;
+    const userid = req.body.userid;
+    const otherid = req.body.otherid;
 
     console.log("ismatch", userid, userid);
 
@@ -29,7 +29,7 @@ router.post("/ismatch/:userid/:otherid", async (req, res) => {
       } else if (data.userswipes[otherid].swipe === "false") {
         response = false;
       } else {
-        res.status(400).send({
+        res.status(400).json({
           message: `Something went wrong with user ${userid} and ${otherid} on /ismatch`,
           data: data,
           response: response,
@@ -40,13 +40,13 @@ router.post("/ismatch/:userid/:otherid", async (req, res) => {
         userswipes: data.userswipes,
         collection: Users,
       });
-      res.status(200).send({
+      res.status(200).json({
         message: `User ${userid} has user ${otherid} with value ${data.userswipes[otherid]}`,
         data: write,
         response: response,
       });
     } else {
-      res.status(404).send({
+      res.status(404).json({
         message: `User ${userid} does not have ${otherid}`,
         data: data,
         response: null,
@@ -58,9 +58,9 @@ router.post("/ismatch/:userid/:otherid", async (req, res) => {
 });
 
 // app.get('/nextUser')
-router.post("/nextuser/:userid", async (req, res) => {
+router.post("/nextuser", async (req, res) => {
   try {
-    const userid = req.params.userid;
+    const userid = req.body.userid;
     let nextuser = 0;
     let write = null;
 
@@ -83,7 +83,7 @@ router.post("/nextuser/:userid", async (req, res) => {
       //   get more users
     }
 
-    res.status(200).send({
+    res.status(200).json({
       message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
       data: write,
       response: nextuser,
@@ -92,10 +92,10 @@ router.post("/nextuser/:userid", async (req, res) => {
     console.log(err);
   }
 });
-router.post("/recommendation/:userid/:count?", async (req, res) => {
+router.post("/recommendation", async (req, res) => {
   try {
-    const userid = req.params.userid;
-    const count = Number(req.params.count || 20);
+    const userid = req.body.userid;
+    const count = Number(req.body.count || 20);
 
     if (typeof count === "number") {
       const { listOfUsers, write, data } = await getRecommendations({
@@ -103,41 +103,49 @@ router.post("/recommendation/:userid/:count?", async (req, res) => {
         count,
       });
 
-      res.status(200).send({
+      res.status(200).json({
         message: `User ${userid} queue addition successful: added ${data.recommendqueue.length} recommendations`,
         data: write,
         added: listOfUsers,
       });
     } else {
-      res.status(400).send({ message: "Bad request" });
+      res.status(400).json({ message: "Bad request" });
     }
   } catch (err) {
     console.log(err);
   }
 });
 
-router.post("/:userid/:otherid/:bool", async (req, res) => {
+router.post("/swipe", async (req, res) => {
   try {
-    const bool = req.params.bool;
-    const userid = req.params.userid;
-    const otherid = req.params.otherid;
+    const userid = req.body.userid;
+    const otherid = req.body.otherid;
+    let bool = req.body.bool;
+
+    if (bool === "true" || bool === true) {
+      bool = true;
+    } else if (bool === "false" || bool === false) {
+      bool = false;
+    } else {
+      res.status(409).json({ message: "Bad request" });
+    }
 
     console.log("swipe", userid, userid, bool, typeof bool);
-    if (bool === "true" || bool === "false") {
+    if (bool === true || bool === false) {
       const data = await readFromDb({
         key: "userid",
         value: userid,
         collection: Users,
       });
       console.log("userswipes", data.userswipes);
-      if (bool === "true") {
+      if (bool === true) {
         data.userswipes[otherid] = {
-          swipe: "true",
+          swipe: true,
           time: new Date().toISOString(),
         };
-      } else if (bool === "false") {
+      } else if (bool === false) {
         data.userswipes[otherid] = {
-          swipe: "false",
+          swipe: false,
           time: new Date().toISOString(),
         };
       }
@@ -147,12 +155,12 @@ router.post("/:userid/:otherid/:bool", async (req, res) => {
         collection: Users,
       });
 
-      res.status(200).send({
+      res.status(200).json({
         message: `Swipe by ${userid} successful: ${bool} on ${otherid}`,
         data: write,
       });
     } else {
-      res.status(400).send({ message: "Bad request" });
+      res.status(400).json({ message: "Bad request" });
     }
   } catch (err) {
     console.log(err);
