@@ -75,7 +75,6 @@ const getSwipedUsers = async (userdata) => {
   return Object.keys(userdata.userswipes);
 };
 const getRecommendations = async ({ userid, count }) => {
-  console.log("useridcount", userid, count);
   const data = await readFromDb({
     key: "userid",
     value: userid,
