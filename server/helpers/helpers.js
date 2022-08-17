@@ -28,6 +28,6 @@ const typeValidator = (type, value) => {
   return false;
 };
 
-console.log(typeValidator("array", []), typeof []);
+// console.log(typeValidator("array", []), typeof []);
 
-module.exports = { logger, typeValidator };
+module.exports = { logger };
