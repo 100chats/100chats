@@ -8,6 +8,7 @@ const { logger } = require("./helpers/helpers");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { readFromDb, writeToDb, deleteFromDb } = require("./helpers/dbhelpers");
+const { connectDB } = require("./models/db");
 
 const users = require("./routes/userRoutes");
 const swipe = require("./routes/swipeRoutes");
@@ -23,9 +24,10 @@ app.use("/login", login);
 
 app.set("json spaces", 2);
 app.listen(port, () => console.log(`listening on port: ${port}`));
+connectDB();
 app.set("view engine", "ejs");
-// app.use(express.static("public"));
 
+// app.use(express.static("public"));
 const { auth } = require("express-openid-connect");
 
 const config = {
@@ -48,12 +50,6 @@ app.get("/", (req, res) => {
       : "Logged out",
   });
 });
-
-// mongoose setup
-mongoose.connect(process.env.DBSTRING);
-const db = mongoose.connection;
-db.on("error", (error) => console.log(error));
-db.once("open", () => console.log("Connected to db"));
 
 app.get("/", async (req, res) => {
   try {

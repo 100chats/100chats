@@ -127,41 +127,38 @@ router.post("/swipe", async (req, res) => {
     } else if (bool === "false" || bool === false) {
       bool = false;
     } else {
-      res.status(409).json({ message: "Bad request" });
-    }
-
-    console.log("swipe", userid, userid, bool, typeof bool);
-    if (bool === true || bool === false) {
-      const data = await readFromDb({
-        key: "userid",
-        value: userid,
-        collection: Users,
-      });
-      console.log("userswipes", data.userswipes);
-      if (bool === true) {
-        data.userswipes[otherid] = {
-          swipe: true,
-          time: new Date().toISOString(),
-        };
-      } else if (bool === false) {
-        data.userswipes[otherid] = {
-          swipe: false,
-          time: new Date().toISOString(),
-        };
-      }
-      const write = await writeToDb({
-        userid,
-        userswipes: data.userswipes,
-        collection: Users,
-      });
-
-      res.status(200).json({
-        message: `Swipe by ${userid} successful: ${bool} on ${otherid}`,
-        data: write,
-      });
-    } else {
       res.status(400).json({ message: "Bad request" });
     }
+
+    // console.log("swipe", userid, userid, bool, typeof bool);
+
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
+    // console.log("userswipes", data.userswipes);
+    if (bool) {
+      data.userswipes[otherid] = {
+        swipe: true,
+        time: new Date().toISOString(),
+      };
+    } else {
+      data.userswipes[otherid] = {
+        swipe: false,
+        time: new Date().toISOString(),
+      };
+    }
+    const write = await writeToDb({
+      userid,
+      userswipes: data.userswipes,
+      collection: Users,
+    });
+
+    res.status(200).json({
+      message: `Swipe by ${userid} successful: ${bool} on ${otherid}`,
+      data: write,
+    });
   } catch (err) {
     console.log(err);
   }
