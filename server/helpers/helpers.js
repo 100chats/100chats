@@ -15,19 +15,4 @@ const logger = (req, res, next) => {
   next();
 };
 
-const typeValidator = (type, value) => {
-  console.log(type, value, typeof value);
-  if ((typeof value).toLowerCase() === "object") {
-    if (value.constructor.name.toLowerCase() === type) {
-      return true;
-    }
-  }
-  if ((typeof value).toLowerCase() === type.toLowerCase()) {
-    return true;
-  }
-  return false;
-};
-
-// console.log(typeValidator("array", []), typeof []);
-
 module.exports = { logger };
