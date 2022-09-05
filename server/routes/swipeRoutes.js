@@ -130,25 +130,17 @@ router.post("/swipe", async (req, res) => {
       res.status(400).json({ message: "Bad request" });
     }
 
-    // console.log("swipe", userid, userid, bool, typeof bool);
-
     const data = await readFromDb({
       key: "userid",
       value: userid,
       collection: Users,
     });
-    // console.log("userswipes", data.userswipes);
-    if (bool) {
-      data.userswipes[otherid] = {
-        swipe: true,
-        time: new Date().toISOString(),
-      };
-    } else {
-      data.userswipes[otherid] = {
-        swipe: false,
-        time: new Date().toISOString(),
-      };
-    }
+
+    data.userswipes[otherid] = {
+      swipe: bool,
+      time: new Date().toISOString(),
+    };
+
     const write = await writeToDb({
       userid,
       userswipes: data.userswipes,
