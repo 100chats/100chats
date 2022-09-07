@@ -3,9 +3,9 @@ const router = express.Router();
 const { readFromDb, writeToDb, deleteFromDb } = require("../helpers/dbhelpers");
 const Users = require("../models/user");
 
-router.get("/allusers", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const data = await readFromDb();
+    const data = await readFromDb({ collection: Users });
 
     res.status(200).json({ data });
   } catch (err) {

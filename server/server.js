@@ -8,11 +8,13 @@ const { logger } = require("./helpers/helpers");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { readFromDb, writeToDb, deleteFromDb } = require("./helpers/dbhelpers");
+const cors = require("cors");
 
 const users = require("./routes/userRoutes");
 const swipe = require("./routes/swipeRoutes");
 const login = require("./routes/loginRoutes");
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 //both index.js and things.js should be in same directory
@@ -22,7 +24,9 @@ app.use("/login", login);
 
 app.use(logger);
 app.set("json spaces", 2);
-app.listen(port, () => console.log(`App is running on http://localhost:${port}`));
+app.listen(port, () =>
+  console.log(`App is running on http://localhost:${port}`)
+);
 app.set("view engine", "ejs");
 // app.use(express.static("public"));
 
