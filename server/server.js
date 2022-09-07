@@ -23,8 +23,10 @@ app.use("/swipes", swipe);
 app.use("/login", login);
 
 app.set("json spaces", 2);
-app.listen(port, () => console.log(`listening on port: ${port}`));
+
+app.listen(port, () => console.log(`App is running on http://localhost:${port}`));
 connectDB();
+
 app.set("view engine", "ejs");
 
 // app.use(express.static("public"));
