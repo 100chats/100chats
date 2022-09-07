@@ -3,9 +3,9 @@ const router = express.Router();
 const { readFromDb, writeToDb, deleteFromDb } = require("../helpers/dbhelpers");
 const Users = require("../models/user");
 
-router.get("/allusers", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const data = await readFromDb();
+    const data = await readFromDb({ collection: Users });
 
     res.status(200).json({ data });
   } catch (err) {
@@ -23,7 +23,7 @@ router.get("/:userid", async (req, res) => {
 
     res
       .status(200)
-      .send({ message: `Retrieve user data for ${userid}`, data: data });
+      .json({ message: `Retrieve user data for ${userid}`, data: data });
   } catch (err) {
     console.log(err);
   }
@@ -34,7 +34,7 @@ router.delete("/:userid", async (req, res) => {
   console.log("deleting...", key);
   try {
     deleteFromDb(key);
-    res.status(202).send({ message: `${key} has been deleted` });
+    res.status(202).json({ message: `${key} has been deleted` });
   } catch (err) {
     console.log(err);
   }
