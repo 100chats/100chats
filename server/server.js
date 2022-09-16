@@ -9,11 +9,13 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const { readFromDb, writeToDb, deleteFromDb } = require("./helpers/dbhelpers");
 const { connectDB } = require("./models/db");
+const cors = require("cors");
+const axios = require("axios");
 
 const users = require("./routes/userRoutes");
 const swipe = require("./routes/swipeRoutes");
 const login = require("./routes/loginRoutes");
-
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
@@ -24,12 +26,13 @@ app.use("/login", login);
 
 app.set("json spaces", 2);
 
-app.listen(port, () => console.log(`App is running on http://localhost:${port}`));
+app.listen(port, () =>
+  console.log(`App is running on http://localhost:${port}`)
+);
 connectDB();
-
+app.use(express.static(__dirname + "/public"));
 app.set("view engine", "ejs");
 
-// app.use(express.static("public"));
 const { auth } = require("express-openid-connect");
 
 const config = {
@@ -45,19 +48,23 @@ const config = {
 app.use(auth(config));
 
 // req.isAuthenticated is provided from the auth router
-app.get("/", (req, res) => {
-  res.json({
-    message: req.oidc.isAuthenticated()
-      ? `Logged in ${JSON.stringify(req.oidc.user)}`
-      : "Logged out",
-  });
+app.get("/", async (req, res) => {
+  console.log(req.oidc.user);
+  const userinfo = await axios.get("http://localhost:4000/users/1");
+  console.log("userinfo", userinfo.data.data);
+  req.oidc.isAuthenticated()
+    ? res.render("../server/views/index.ejs", {
+        message: req.oidc.user,
+        user: userinfo.data.data,
+      })
+    : res.json({ message: "Logged out" });
 });
 
-app.get("/", async (req, res) => {
-  try {
-    // res.status(200).json({message:'Getting "/"  route'});
-    res.render("../server/views/index.ejs");
-  } catch (err) {
-    console.log(err);
-  }
-});
+// app.get("/", async (req, res) => {
+//   try {
+//     // res.status(200).json({message:'Getting "/"  route'});
+//     res.render("../server/views/index.ejs");
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });

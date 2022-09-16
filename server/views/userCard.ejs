@@ -1,0 +1,27 @@
+<div class="tinder">
+    <div class="tinder--status">
+        <i class="fa fa-remove"></i>
+        <i class="fa fa-heart"></i>
+    </div>
+
+    <div class="tinder--cards">
+        <div class="tinder--card">
+            <img src=<%=user.profile_img%> height='500px' width='300px'>
+            <h3>
+                <%= user.username%> (<%= user.userid%>)
+            </h3>
+            <p>This is a demo for Tinder like swipe cards</p>
+            <%= user.userid %>
+        </div>
+        <div class="tinder--card">
+            <img src="user2.jpeg">
+            <h3>Demo card 2</h3>
+            <p>This is a demo for Tinder like swipe cards</p>
+        </div>
+    </div>
+
+    <div class="tinder--buttons">
+        <button id="nope"><i class="fa fa-remove"></i></button>
+        <button id="love"><i class="fa fa-heart"></i></button>
+    </div>
+</div>

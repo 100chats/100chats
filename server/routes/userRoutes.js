@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { readFromDb, writeToDb, deleteFromDb } = require("../helpers/dbhelpers");
 const Users = require("../models/user");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 
 router.get("/", async (req, res) => {
   try {
@@ -70,5 +72,28 @@ router.post("/register", async (req, res) => {
     console.log(err);
   }
 });
+router.post("/profileimage", upload.single("image"), async (req, res) => {
+  try {
+    const reqBody = req.body;
+    // Upload image to cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+    // Create new user
 
+    const write = await writeToDb({
+      userid: reqBody.userid,
+      profile_img: result.secure_url,
+      cloudinary_id: result.public_id,
+      collection: Users,
+    });
+    // save user details in mongodb
+
+    res.status(201).send({
+      message: `User ${reqBody.userid} uploaded an image`,
+      data: write,
+      result: result,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
 module.exports = router;

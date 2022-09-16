@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
   firstname: { type: String },
   lastname: { type: String },
   location: { type: String },
+  profile_img: { type: String },
+  cloudinary_id: { type: String },
   age: { type: Number },
   email: { type: String },
   linkssocial: { type: Object },
