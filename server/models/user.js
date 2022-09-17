@@ -16,6 +16,14 @@ const userSchema = new mongoose.Schema({
   userswipes: { type: Object },
   recommendqueue: { type: Array },
   imageprofile: { type: String },
+  nickname: { type: String },
+  name: { type: String },
+  picture: { type: String },
+  updated_at: { type: String },
+
+  email_verified: { type: Boolean },
+  sub: { type: String },
+  sid: { type: String },
   createdat: { type: Date, required: true, default: Date.now },
   updatedat: { type: Date, required: true },
 });

@@ -57,10 +57,16 @@ app.use(auth(config));
 // req.isAuthenticated is provided from the auth router
 app.get("/", async (req, res) => {
   console.log(req.oidc.user);
+  const writedata = {
+    ...req.oidc.user,
+    collection: Users,
+  };
+  console.log(writedata);
+  const write = await writeToDb({ userid: req.oidc.user.email, ...writedata });
   const nextuser = await peekNextUser({ userid: "1" });
-  console.log("response", nextuser.response);
+  // console.log("response", nextuser.response);
   const userinfo = await getAUser({ userid: nextuser.response });
-  console.log("userinfo", userinfo.data);
+  // console.log("userinfo", userinfo.data);
   req.oidc.isAuthenticated()
     ? res.render("../server/views/index.ejs", {
         message: req.oidc.user,

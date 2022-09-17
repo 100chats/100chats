@@ -32,6 +32,14 @@ const writeToDb = async ({
   userswipes,
   recommendqueue,
   imageprofile,
+  nickname,
+  name,
+  picture,
+  updated_at,
+
+  email_verified,
+  sub,
+  sid,
 }) => {
   console.log("write to db");
   const query = { userid };
@@ -53,6 +61,13 @@ const writeToDb = async ({
       userswipes,
       recommendqueue,
       imageprofile,
+      nickname,
+      name,
+      picture,
+      updated_at,
+      email_verified,
+      sub,
+      sid,
     },
     updatedat,
   };
@@ -220,7 +235,7 @@ const nextUser = async ({ userid }) => {
     });
   } else {
     let data = await writeRecommendations({ count: 5, userid });
-    console.log("DATA8", data.write);
+
     nextuser = data.recommendqueue.shift();
   }
   if (!data) data = data.write;

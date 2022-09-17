@@ -80,13 +80,18 @@ allCards.forEach(function (el) {
         "px) rotate(" +
         rotate +
         "deg)";
+
       initCards();
     }
+    if (event.deltaX >= 0)
+      directionEvent({ direction: true, userid: "1", otherid: "5" });
+    if (event.deltaX <= 0)
+      directionEvent({ direction: false, userid: "1", otherid: "6" });
   });
 });
 
 function createButtonListener(love) {
-  return function (event) {
+  return async function (event) {
     var cards = document.querySelectorAll(".tinder--card:not(.removed)");
     var moveOutWidth = document.body.clientWidth * 1.5;
 
@@ -97,9 +102,11 @@ function createButtonListener(love) {
     card.classList.add("removed");
 
     if (love) {
+      await directionEvent({ direction: true, userid: "1", otherid: "2" });
       card.style.transform =
         "translate(" + moveOutWidth + "px, -100px) rotate(-30deg)";
     } else {
+      await directionEvent({ direction: false, userid: "1", otherid: "4" });
       card.style.transform =
         "translate(-" + moveOutWidth + "px, -100px) rotate(30deg)";
     }
@@ -109,6 +116,27 @@ function createButtonListener(love) {
     event.preventDefault();
   };
 }
+
+const directionEvent = async ({ direction, userid, otherid }) => {
+  try {
+    console.log("user", user, message);
+
+    console.log(`Swiped ${direction ? "yes" : "no"}`);
+    console.log(window.location.origin);
+    let url = `${window.location.origin}/swipes/swipe`;
+    let body = {};
+
+    body["userid"] = user.email;
+    body["otherid"] = user.userid;
+    body["bool"] = direction;
+
+    const response = await axios.post(url, body);
+    // response.then((e) => console.log(e));
+    console.log("response", response);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 var nopeListener = createButtonListener(false);
 var loveListener = createButtonListener(true);
