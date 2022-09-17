@@ -7,7 +7,14 @@ const Users = require("./models/user");
 const { logger } = require("./helpers/helpers");
 const bodyParser = require("body-parser");
 const path = require("path");
-const { readFromDb, writeToDb, deleteFromDb } = require("./helpers/dbhelpers");
+const {
+  readFromDb,
+  writeToDb,
+  deleteFromDb,
+  getAUser,
+  nextUser,
+  peekNextUser,
+} = require("./helpers/dbhelpers");
 const { connectDB } = require("./models/db");
 const cors = require("cors");
 const axios = require("axios");
@@ -50,12 +57,14 @@ app.use(auth(config));
 // req.isAuthenticated is provided from the auth router
 app.get("/", async (req, res) => {
   console.log(req.oidc.user);
-  const userinfo = await axios.get("http://localhost:4000/users/1");
-  console.log("userinfo", userinfo.data.data);
+  const nextuser = await peekNextUser({ userid: "1" });
+  console.log("response", nextuser.response);
+  const userinfo = await getAUser({ userid: nextuser.response });
+  console.log("userinfo", userinfo.data);
   req.oidc.isAuthenticated()
     ? res.render("../server/views/index.ejs", {
         message: req.oidc.user,
-        user: userinfo.data.data,
+        user: userinfo.data,
       })
     : res.json({ message: "Logged out" });
 });

@@ -102,7 +102,7 @@ const getRecommendations = async ({ userid, count }) => {
   return { listOfUsers, write, data };
 };
 
-const getAUser = async (userid) => {
+const getAUser = async ({ userid }) => {
   const data = await readFromDb({
     key: "userid",
     value: userid,
@@ -162,6 +162,45 @@ const recommendation = async ({ count, userid }) => {
     throw "Bad request";
   }
 };
+const peekNextUser = async ({ userid }) => {
+  try {
+    let nextuser = 0;
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
+    if (data.recommendqueue.length >= 1) {
+      nextuser = data.recommendqueue[0];
+    } else {
+      const { message, data, added, recommendqueue, nextuser, write } =
+        await writeRecommendations({ count: 5, userid });
+    }
+
+    return {
+      message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
+      response: nextuser,
+      data: null,
+    };
+  } catch (err) {
+    console.log(err);
+  }
+};
+const writeRecommendations = async ({ count, userid }) => {
+  let write = null;
+  const { message, data, added, recommendqueue } = await recommendation({
+    count: count,
+    userid: userid,
+  });
+  data.recommendqueue.push(...recommendqueue);
+  nextuser = data.recommendqueue.shift();
+  write = await writeToDb({
+    userid,
+    recommendqueue: data.recommendqueue,
+    collection: Users,
+  });
+  return { message, data, added, recommendqueue, nextuser, write };
+};
 
 const nextUser = async ({ userid }) => {
   let nextuser = 0;
@@ -180,23 +219,15 @@ const nextUser = async ({ userid }) => {
       collection: Users,
     });
   } else {
-    const { message, data, added, recommendqueue } = await recommendation({
-      count: 5,
-      userid,
-    });
-    data.recommendqueue.push(...recommendqueue);
+    let data = await writeRecommendations({ count: 5, userid });
+    console.log("DATA8", data.write);
     nextuser = data.recommendqueue.shift();
-    write = await writeToDb({
-      userid,
-      recommendqueue: data.recommendqueue,
-      collection: Users,
-    });
   }
-
+  if (!data) data = data.write;
   return {
     message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
     response: nextuser,
-    data: write,
+    data: data,
   };
 };
 
@@ -246,4 +277,5 @@ module.exports = {
   recommendation,
   nextUser,
   isMatch,
+  peekNextUser,
 };

@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
 router.get("/:userid", async (req, res) => {
   let userid = req.params.userid;
   try {
-    const data = await getAUser(userid);
+    const data = await getAUser({ userid });
     res.status(200).json({ message: data.message, data: data.data });
   } catch (err) {
     console.log(err);
