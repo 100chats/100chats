@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { readFromDb, writeToDb, deleteFromDb } = require("../helpers/dbhelpers");
+const {
+  readFromDb,
+  writeToDb,
+  deleteFromDb,
+  getAUser,
+} = require("../helpers/dbhelpers");
 const Users = require("../models/user");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
@@ -14,18 +19,12 @@ router.get("/", async (req, res) => {
     console.log(err);
   }
 });
+
 router.get("/:userid", async (req, res) => {
   let userid = req.params.userid;
   try {
-    const data = await readFromDb({
-      key: "userid",
-      value: userid,
-      collection: Users,
-    });
-
-    res
-      .status(200)
-      .json({ message: `Retrieve user data for ${userid}`, data: data });
+    const data = await getAUser(userid);
+    res.status(200).json({ message: data.message, data: data.data });
   } catch (err) {
     console.log(err);
   }

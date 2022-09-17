@@ -102,6 +102,137 @@ const getRecommendations = async ({ userid, count }) => {
   return { listOfUsers, write, data };
 };
 
+const getAUser = async (userid) => {
+  const data = await readFromDb({
+    key: "userid",
+    value: userid,
+    collection: Users,
+  });
+  const message = `Retrieve user data for ${userid}`;
+  return { data, message };
+};
+
+const forceBoolean = (value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    if (value === "true") return true;
+    if (value === "false") return false;
+    throw "Bad request";
+  }
+};
+
+const swipe = async ({ userid, otherid, direction }) => {
+  try {
+    const bool = forceBoolean(direction);
+  } catch (err) {
+    console.log(err);
+    return { message: "Bad request" };
+  }
+  const data = await readFromDb({
+    key: "userid",
+    value: userid,
+    collection: Users,
+  });
+  data.userswipes[otherid] = {
+    swipe: direction,
+    time: new Date().toISOString(),
+  };
+  const write = await writeToDb({
+    userid,
+    userswipes: data.userswipes,
+    collection: Users,
+  });
+  const message = `Swipe by ${userid} successful: ${direction} on ${otherid}`;
+  return { write, direction, message };
+};
+
+const recommendation = async ({ count, userid }) => {
+  if (typeof count === "number") {
+    const { listOfUsers, write, data } = await getRecommendations({
+      userid,
+      count,
+    });
+    return {
+      message: `User ${userid} queue addition successful: added ${data.recommendqueue.length} recommendations`,
+      data: write,
+      added: listOfUsers,
+      recommendqueue: data.recommendqueue,
+    };
+  } else {
+    throw "Bad request";
+  }
+};
+
+const nextUser = async ({ userid }) => {
+  let nextuser = 0;
+  let write = null;
+  const data = await readFromDb({
+    key: "userid",
+    value: userid,
+    collection: Users,
+  });
+
+  if (data.recommendqueue.length >= 1) {
+    nextuser = data.recommendqueue.shift();
+    write = await writeToDb({
+      userid,
+      recommendqueue: data.recommendqueue,
+      collection: Users,
+    });
+  } else {
+    const { message, data, added, recommendqueue } = await recommendation({
+      count: 5,
+      userid,
+    });
+    data.recommendqueue.push(...recommendqueue);
+    nextuser = data.recommendqueue.shift();
+    write = await writeToDb({
+      userid,
+      recommendqueue: data.recommendqueue,
+      collection: Users,
+    });
+  }
+
+  return {
+    message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
+    response: nextuser,
+    data: write,
+  };
+};
+
+const isMatch = async ({ userid, otherid }) => {
+  console.log("ismatch", userid, userid);
+
+  const data = await readFromDb({
+    key: "userid",
+    value: userid,
+    collection: Users,
+  });
+  let response = null;
+  if (data.userswipes[otherid] !== undefined) {
+    if (data.userswipes[otherid].swipe === "true") {
+      response = true;
+    } else if (data.userswipes[otherid].swipe === "false") {
+      response = false;
+    } else {
+      throw `Something went wrong with user ${userid} and ${otherid} on /ismatch`;
+    }
+    const write = await writeToDb({
+      userid,
+      userswipes: data.userswipes,
+      collection: Users,
+    });
+
+    return {
+      message: `User ${userid} has user ${otherid} with value ${data.userswipes[otherid].swipe}`,
+      response: response,
+      data: write,
+    };
+  } else {
+    throw `User ${userid} does not have ${otherid}`;
+  }
+};
+
 module.exports = {
   readFromDb,
   writeToDb,
@@ -109,4 +240,10 @@ module.exports = {
   getRandomUsers,
   getSwipedUsers,
   getRecommendations,
+  getAUser,
+  swipe,
+  forceBoolean,
+  recommendation,
+  nextUser,
+  isMatch,
 };
