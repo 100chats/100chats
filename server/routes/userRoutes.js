@@ -5,6 +5,7 @@ const {
   writeToDb,
   deleteFromDb,
   getAUser,
+  registerUser,
 } = require("../helpers/dbhelpers");
 const Users = require("../models/user");
 const cloudinary = require("../utils/cloudinary");
@@ -34,7 +35,7 @@ router.delete("/:userid", async (req, res) => {
   let key = req.params.userid;
   console.log("deleting...", key);
   try {
-    deleteFromDb(key);
+    deleteFromDb({ userid: key, collection: Users });
     res.status(202).json({ message: `${key} has been deleted` });
   } catch (err) {
     console.log(err);
@@ -45,23 +46,7 @@ router.post("/register", async (req, res) => {
   try {
     const reqBody = req.body;
     console.log("reqBody", req.body);
-    const write = await writeToDb({
-      userid: reqBody.userid,
-      username: reqBody.username,
-      firstname: reqBody.firstname,
-      lastname: reqBody.lastname,
-      location: reqBody.location,
-      age: reqBody.age,
-      email: reqBody.email,
-      linkssocial: reqBody.linkssocial,
-      linksprojects: reqBody.linksprojects,
-      userdescription: reqBody.userdescription,
-      userswipes: reqBody.userswipes || {},
-      recommendqueue: reqBody.recommendqueue || [],
-      imageprofile: reqBody.imageprofile,
-      collection: Users,
-    });
-
+    const { write } = reqBody.userid ? await registerUser({ reqBody }) : null;
     res.status(201).send({
       message: `User ${reqBody.userid} registered`,
       updated: reqBody,

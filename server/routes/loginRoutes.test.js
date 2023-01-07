@@ -1,4 +1,4 @@
-const supertest = require('supertest');
+// const supertest = require("supertest");
 // const app = require('../index');
 
 // describe('GET /api/posts?tags=tech&direction=asc&sortBy=reads', () => {

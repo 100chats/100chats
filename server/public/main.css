@@ -140,3 +140,14 @@ body {
 .fa-remove {
   color: #CDD6DD;
 }
+
+
+/* custom */
+.tinder--card__image{
+/* smaller image */
+  width: 50%;
+  height: 50%;
+  /* background-size: cover; */
+  /* background-position: center; */
+  /* background-repeat: no-repeat; */
+}

@@ -12,6 +12,8 @@ const {
   recommendation,
   nextUser,
   isMatch,
+  peekNextUser,
+  getAUser,
 } = require("../helpers/dbhelpers");
 
 router.post("/ismatch", async (req, res) => {
@@ -60,6 +62,31 @@ router.post("/swipe", async (req, res) => {
     res.status(200).json({
       message: swipeData.message,
       data: swipeData.write,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// render next user card
+router.get("/nextCard/:userid", async (req, res) => {
+  try {
+    // console.log("user", req.params);
+    const userid = req.params.userid;
+    const nextUser = await peekNextUser({ userid: userid });
+    // console.log("nextuser", nextUser.response);
+
+    const nextUserInfo = nextUser.data
+      ? await getAUser({ userid: nextUser.response })
+      : // : { profile_img: "https://picsum.photos/200/300" };
+        null;
+
+    const message = `${userid}'s next recommendation is ${nextUserInfo.data.userid}`;
+
+    res.json({
+      message: message,
+      currentUser: req.params.userid,
+      nextUser: nextUserInfo,
     });
   } catch (err) {
     console.log(err);

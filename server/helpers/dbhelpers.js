@@ -6,7 +6,7 @@ const readFromDb = async ({
   value = undefined,
   collection = undefined,
 }) => {
-  console.log("read from db");
+  console.log("read from db", key, value, collection);
   if (key !== undefined && value !== undefined) {
     return await collection.findOne({ [key]: value });
   } else {
@@ -108,6 +108,7 @@ const getRecommendations = async ({ userid, count }) => {
   const listOfUsers = randomUsers.map((user) => user.userid);
   data.recommendqueue.push(...listOfUsers);
   // data.recommendqueue = [];
+  console.log("randomUsers", randomUsers);
   const write = await writeToDb({
     userid,
     recommendqueue: data.recommendqueue,
@@ -139,26 +140,34 @@ const forceBoolean = (value) => {
 const swipe = async ({ userid, otherid, direction }) => {
   try {
     const bool = forceBoolean(direction);
+    const data = await readFromDb({
+      key: "userid",
+      value: userid,
+      collection: Users,
+    });
+    data.userswipes[otherid] = {
+      swipe: direction,
+      time: new Date().toISOString(),
+    };
+    const write = await writeToDb({
+      userid,
+      userswipes: data.userswipes,
+      collection: Users,
+    });
+    if (data.recommendqueue.length < 5) {
+      const { message, data, added, recommendqueue, nextuser, write } =
+        await writeRecommendations({ count: 5, userid });
+    }
+
+    const message = `Swipe by ${userid} successful: ${direction} on ${otherid}`;
+    // call function to render next user card
+    // const renderNext = await peekAndRenderNextUser({ userid });
+    console.log("swipe", message);
+    return { write, direction, message };
   } catch (err) {
     console.log(err);
     return { message: "Bad request" };
   }
-  const data = await readFromDb({
-    key: "userid",
-    value: userid,
-    collection: Users,
-  });
-  data.userswipes[otherid] = {
-    swipe: direction,
-    time: new Date().toISOString(),
-  };
-  const write = await writeToDb({
-    userid,
-    userswipes: data.userswipes,
-    collection: Users,
-  });
-  const message = `Swipe by ${userid} successful: ${direction} on ${otherid}`;
-  return { write, direction, message };
 };
 
 const recommendation = async ({ count, userid }) => {
@@ -185,31 +194,47 @@ const peekNextUser = async ({ userid }) => {
       value: userid,
       collection: Users,
     });
-    if (data.recommendqueue.length >= 1) {
+    // console.log("peekNextUser", data, userid);
+    if (data.recommendqueue?.length > 0) {
       nextuser = data.recommendqueue[0];
+      console.log("peekNextUser");
     } else {
       const { message, data, added, recommendqueue, nextuser, write } =
         await writeRecommendations({ count: 5, userid });
     }
 
     return {
-      message: `User ${userid}'s next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
+      message: `User ${userid} has next user in queue is ${nextuser} and has ${data.recommendqueue.length} recommendations left`,
       response: nextuser,
-      data: null,
+      data: data,
     };
   } catch (err) {
     console.log(err);
   }
 };
 const writeRecommendations = async ({ count, userid }) => {
-  let write = null;
+  // let write = null;
   const { message, data, added, recommendqueue } = await recommendation({
     count: count,
     userid: userid,
   });
+  console.log(
+    "writeRecommendations",
+    count,
+    userid,
+    message,
+    data,
+    added,
+    "recommendqueue",
+    recommendqueue
+  );
   data.recommendqueue.push(...recommendqueue);
+  // data.recommendqueue = [];
+
   nextuser = data.recommendqueue.shift();
-  write = await writeToDb({
+  // console.log("TEST", data.recommendqueue, nextuser);
+
+  const write = await writeToDb({
     userid,
     recommendqueue: data.recommendqueue,
     collection: Users,
@@ -278,6 +303,34 @@ const isMatch = async ({ userid, otherid }) => {
     throw `User ${userid} does not have ${otherid}`;
   }
 };
+const registerUser = async ({ reqBody }) => {
+  const write = await writeToDb({
+    userid: reqBody.userid,
+    username: reqBody.username,
+    firstname: reqBody.firstname,
+    lastname: reqBody.lastname,
+    location: reqBody.location,
+    age: reqBody.age,
+    email: reqBody.email,
+    linkssocial: reqBody.linkssocial,
+    linksprojects: reqBody.linksprojects,
+    userdescription: reqBody.userdescription,
+    userswipes: reqBody.userswipes || {},
+    recommendqueue: reqBody.recommendqueue || [],
+    imageprofile: reqBody.imageprofile,
+    nickname: reqBody.nickname,
+    name: reqBody.name,
+    picture: reqBody.picture,
+    updated_at: reqBody.updated_at,
+    email_verified: reqBody.email_verified,
+    sub: reqBody.sub,
+    sid: reqBody.sid,
+
+    collection: Users,
+  });
+
+  return { write };
+};
 
 module.exports = {
   readFromDb,
@@ -293,4 +346,5 @@ module.exports = {
   nextUser,
   isMatch,
   peekNextUser,
+  registerUser,
 };

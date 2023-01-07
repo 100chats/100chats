@@ -3,25 +3,30 @@
         <i class="fa fa-remove"></i>
         <i class="fa fa-heart"></i>
     </div>
+    <% if(nextUser.data?.userid){ %>
+        <div class="tinder--cards">
+            <div class="tinder--card">
+                <div class="tinder--card__image">
+                    <img src=<%=false? nextUser.data.profile_img:'' %> >
+                </div>
 
-    <div class="tinder--cards">
-        <div class="tinder--card">
-            <img src=<%=user.profile_img%> height='500px' width='300px'>
-            <h3>
-                <%= user.username%> (<%= user.userid %>)
-            </h3>
-            <p>This is a demo for Tinder like swipe cards</p>
-            <%= user.userid %>
-        </div>
-        <div class="tinder--card">
-            <img src="user2.jpeg">
-            <h3>Demo card 2</h3>
-            <p>This is a demo for Tinder like swipe cards</p>
-        </div>
-    </div>
+                <h3>
+                    <%= nextUser.data.username%> (<%= nextUser.data.userid %>)
+                </h3>
+                <p>This is a demo for Tinder like swipe cards</p>
+                <%= nextUser.data.userid %>
 
-    <div class="tinder--buttons">
-        <button id="nope"><i class="fa fa-remove"></i></button>
-        <button id="love"><i class="fa fa-heart"></i></button>
-    </div>
+            </div>
+
+        </div>
+
+        <% } else{ %>
+            <h1>You have run out of swipes. Please come back later!</h1>
+            <% } %>
+
+                <div class="tinder--buttons">
+                    <button id="nope"><i class="fa fa-remove"></i></button>
+                    <button id="love"><i class="fa fa-heart"></i></button>
+                </div>
+
 </div>

@@ -14,6 +14,7 @@ const {
   getAUser,
   nextUser,
   peekNextUser,
+  registerUser,
 } = require("./helpers/dbhelpers");
 const { connectDB } = require("./models/db");
 const cors = require("cors");
@@ -22,6 +23,7 @@ const axios = require("axios");
 const users = require("./routes/userRoutes");
 const swipe = require("./routes/swipeRoutes");
 const login = require("./routes/loginRoutes");
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -56,30 +58,39 @@ app.use(auth(config));
 
 // req.isAuthenticated is provided from the auth router
 app.get("/", async (req, res) => {
-  console.log(req.oidc.user);
-  const writedata = {
-    ...req.oidc.user,
-    collection: Users,
-  };
-  console.log(writedata);
-  const write = await writeToDb({ userid: req.oidc.user.email, ...writedata });
-  const nextuser = await peekNextUser({ userid: "1" });
-  // console.log("response", nextuser.response);
-  const userinfo = await getAUser({ userid: nextuser.response });
-  // console.log("userinfo", userinfo.data);
-  req.oidc.isAuthenticated()
-    ? res.render("../server/views/index.ejs", {
-        message: req.oidc.user,
-        user: userinfo.data,
-      })
-    : res.json({ message: "Logged out" });
-});
+  if (req.oidc.isAuthenticated()) {
+    const currentUser = await getAUser({ userid: req.oidc.user.email });
+    // console.log("signedin as", currentUser);
+    const reqBody = { userid: req.oidc.user.email };
+    if (currentUser.data) {
+      console.log("CurrentUser TRUE");
+    } else {
+      const register = await registerUser({ reqBody });
+      // console.log("CurrentUser FALSE", register);
+      const writedata = {
+        ...req.oidc.user,
+        collection: Users,
+      };
+      console.log("writedata", writedata, register);
+      const write = await writeToDb({
+        userid: req.oidc.user.email,
+        ...writedata,
+      });
+    }
+    const nextUser = await peekNextUser({ userid: req.oidc.user.email });
+    console.log("nextuser", nextUser.response);
 
-// app.get("/", async (req, res) => {
-//   try {
-//     // res.status(200).json({message:'Getting "/"  route'});
-//     res.render("../server/views/index.ejs");
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
+    const nextUserInfo = nextUser.data
+      ? await getAUser({ userid: nextUser.response })
+      : // : { profile_img: "https://picsum.photos/200/300" };
+        null;
+
+    res.render("../server/views/index.ejs", {
+      message: req.oidc.user,
+      currentUser: currentUser,
+      nextUser: nextUserInfo,
+    });
+  } else {
+    res.render("../server/views/logout.ejs", {});
+  }
+});

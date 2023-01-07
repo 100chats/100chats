@@ -20,6 +20,15 @@ function initCards(card, index) {
 
 initCards();
 
+// console.log(
+//   "message",
+//   JSON.parse(message),
+//   "currentUser",
+//   JSON.parse(currentUser),
+//   "\nnextUser",
+//   JSON.parse(nextUser)
+// );
+
 allCards.forEach(function (el) {
   var hammertime = new Hammer(el);
 
@@ -48,7 +57,7 @@ allCards.forEach(function (el) {
       "deg)";
   });
 
-  hammertime.on("panend", function (event) {
+  hammertime.on("panend", async function (event) {
     el.classList.remove("moving");
     tinderContainer.classList.remove("tinder_love");
     tinderContainer.classList.remove("tinder_nope");
@@ -84,13 +93,21 @@ allCards.forEach(function (el) {
       initCards();
     }
     if (event.deltaX >= 0)
-      directionEvent({ direction: true, userid: "1", otherid: "5" });
+      await directionEvent({
+        direction: true,
+        userid: JSON.parse(currentUser).data.userid,
+        otherid: JSON.parse(nextUser).data.userid,
+      });
     if (event.deltaX <= 0)
-      directionEvent({ direction: false, userid: "1", otherid: "6" });
+      await directionEvent({
+        direction: false,
+        userid: JSON.parse(currentUser).data.userid,
+        otherid: JSON.parse(nextUser).data.userid,
+      });
   });
 });
 
-function createButtonListener(love) {
+function createButtonListener({ direction, currentUser, nextUser }) {
   return async function (event) {
     var cards = document.querySelectorAll(".tinder--card:not(.removed)");
     var moveOutWidth = document.body.clientWidth * 1.5;
@@ -101,12 +118,23 @@ function createButtonListener(love) {
 
     card.classList.add("removed");
 
-    if (love) {
-      await directionEvent({ direction: true, userid: "1", otherid: "2" });
+    // console.log("currentUser", currentUser);
+    // console.log("nextUser", nextUser);
+
+    if (direction) {
+      await directionEvent({
+        direction: true,
+        userid: JSON.parse(currentUser).data.userid,
+        otherid: JSON.parse(nextUser).data.userid,
+      });
       card.style.transform =
         "translate(" + moveOutWidth + "px, -100px) rotate(-30deg)";
     } else {
-      await directionEvent({ direction: false, userid: "1", otherid: "4" });
+      await directionEvent({
+        direction: false,
+        userid: JSON.parse(currentUser).data.userid,
+        otherid: JSON.parse(nextUser).data.userid,
+      });
       card.style.transform =
         "translate(-" + moveOutWidth + "px, -100px) rotate(30deg)";
     }
@@ -119,27 +147,51 @@ function createButtonListener(love) {
 
 const directionEvent = async ({ direction, userid, otherid }) => {
   try {
-    console.log("user", user, message);
-
+    console.log("createButtonListener", "userid:", userid, "otherid:", otherid);
     console.log(`Swiped ${direction ? "yes" : "no"}`);
     console.log(window.location.origin);
-    let url = `${window.location.origin}/swipes/swipe`;
+    let swipeUrl = `${window.location.origin}/swipes/swipe`;
     let body = {};
 
-    body["userid"] = user.email;
-    body["otherid"] = user.userid;
+    body["userid"] = userid;
+    body["otherid"] = otherid;
     body["bool"] = direction;
 
-    const response = await axios.post(url, body);
+    const response = await axios.post(swipeUrl, body);
     // response.then((e) => console.log(e));
-    console.log("response", response);
+    console.log("Message from directionEvent:", response);
+
+    await renderNextUser({ userid: userid });
   } catch (err) {
-    console.log(err);
+    console.log("Error in directionEvent: ", err);
   }
 };
 
-var nopeListener = createButtonListener(false);
-var loveListener = createButtonListener(true);
+var nopeListener = createButtonListener({
+  direction: false,
+  currentUser: currentUser,
+  nextUser: nextUser,
+});
+var loveListener = createButtonListener({
+  direction: true,
+  currentUser: currentUser,
+  nextUser: nextUser,
+});
 
 nope.addEventListener("click", nopeListener);
 love.addEventListener("click", loveListener);
+
+// tinderCard();
+// render next user card
+const renderNextUser = async ({ userid }) => {
+  console.log("renderNextUser", userid);
+  try {
+    let nextCardUrl = `${window.location.origin}/swipes/nextCard`;
+
+    const response = await axios.get(`${nextCardUrl}/${userid}`);
+
+    console.log("Message from renderNextUser:", response);
+  } catch (err) {
+    console.log("Error in renderNextUser: ", err);
+  }
+};
