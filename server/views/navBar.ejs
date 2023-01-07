@@ -1,0 +1,17 @@
+<nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">100Chats</a>
+
+
+        <% if(currentUser){ %>
+            <a class="nav-link active" aria-current="page" href="/">
+                <%= currentUser.data?.userid%>
+            </a>
+
+            <% } %>
+
+                <a class="nav-link active" aria-current="page" href="/logout">
+                    Logout
+                </a>
+    </div>
+</nav>
